@@ -12,14 +12,12 @@ export async function api(path, method = "GET", body) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // ✅ HANDLE UNAUTHORIZED INSIDE FUNCTION
   if (res.status === 401) {
     localStorage.clear();
     window.location.href = "/";
     return;
   }
 
-  // ✅ HANDLE OTHER ERRORS
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || "API error");
