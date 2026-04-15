@@ -1,8 +1,4 @@
-// src/utils/api.js
-
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:4000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export async function api(path, method = "GET", body) {
   const token = localStorage.getItem("token");
@@ -16,24 +12,18 @@ export async function api(path, method = "GET", body) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // ❌ REMOVE auto redirect
+  // ✅ HANDLE UNAUTHORIZED INSIDE FUNCTION
   if (res.status === 401) {
-    console.warn("Unauthorized - please login");
-    return null; // prevent crash
+    localStorage.clear();
+    window.location.href = "/";
+    return;
   }
 
-  const text = await res.text();
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = text;
-  }
-
+  // ✅ HANDLE OTHER ERRORS
   if (!res.ok) {
-    throw new Error(data || "API error");
+    const text = await res.text();
+    throw new Error(text || "API error");
   }
 
-  return data;
+  return res.json();
 }
