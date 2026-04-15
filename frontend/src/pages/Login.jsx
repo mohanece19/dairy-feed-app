@@ -1,57 +1,59 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { api } from "../utils/api";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [err, setErr] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function login() {
-    setErr('');
+    setErr("");
+    setLoading(true);
+
     try {
-      const res = await fetch('http://localhost:4000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+      const data = await api("/auth/login", "POST", {
+        username,
+        password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
       // ✅ store token
-      localStorage.setItem('token', data.token);
+      localStorage.setItem("token", data.token);
 
       // optional: store role
-      localStorage.setItem('role', data.user.role);
+      localStorage.setItem("role", data.user.role);
 
       // redirect
-      window.location = '/dashboard';
-
+      window.location.href = "/dashboard";
     } catch (e) {
       setErr(e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 300, margin: '100px auto' }}>
+    <div style={{ maxWidth: 300, margin: "100px auto" }}>
       <h2>Login</h2>
 
-      {err && <p style={{ color: 'red' }}>{err}</p>}
+      {err && <p style={{ color: "red" }}>{err}</p>}
 
       <input
         placeholder="Username"
-        onChange={e => setUsername(e.target.value)}
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
 
       <input
         type="password"
         placeholder="Password"
-        onChange={e => setPassword(e.target.value)}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button onClick={login}>Login</button>
+      <button onClick={login} disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
     </div>
   );
 }
